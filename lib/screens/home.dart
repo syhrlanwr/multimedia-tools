@@ -60,42 +60,42 @@ class _HomeState extends State<Home> {
               Navigator.pushNamed(context, '/audio/compress');
             },
           ),
-          ListTile(
-            title: const Text('Convert'),
-            subtitle: const Text('Convert an audio to another format'),
-            leading: const Icon(Icons.swap_horiz),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.pushNamed(context, '/audio/convert');
-            },
-          ),
-          ListTile(
-            title: const Text('Pitch'),
-            subtitle: const Text('Change the pitch of an audio'),
-            leading: const Icon(Icons.music_note),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.pushNamed(context, '/audio/pitch');
-            },
-          ),
-          ListTile(
-            title: const Text('Speed'),
-            subtitle: const Text('Change the speed of an audio'),
-            leading: const Icon(Icons.speed),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.pushNamed(context, '/audio/speed');
-            },
-          ),
-          ListTile(
-            title: const Text('Concat'),
-            subtitle: const Text('Concatenate two or more audios'),
-            leading: const Icon(Icons.merge_type),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.pushNamed(context, '/audio/trim');
-            },
-          ),
+          // ListTile(
+          //   title: const Text('Convert'),
+          //   subtitle: const Text('Convert an audio to another format'),
+          //   leading: const Icon(Icons.swap_horiz),
+          //   trailing: const Icon(Icons.arrow_forward_ios),
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/audio/convert');
+          //   },
+          // ),
+          // ListTile(
+          //   title: const Text('Pitch'),
+          //   subtitle: const Text('Change the pitch of an audio'),
+          //   leading: const Icon(Icons.music_note),
+          //   trailing: const Icon(Icons.arrow_forward_ios),
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/audio/pitch');
+          //   },
+          // ),
+          // ListTile(
+          //   title: const Text('Speed'),
+          //   subtitle: const Text('Change the speed of an audio'),
+          //   leading: const Icon(Icons.speed),
+          //   trailing: const Icon(Icons.arrow_forward_ios),
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/audio/speed');
+          //   },
+          // ),
+          // ListTile(
+          //   title: const Text('Concat'),
+          //   subtitle: const Text('Concatenate two or more audios'),
+          //   leading: const Icon(Icons.merge_type),
+          //   trailing: const Icon(Icons.arrow_forward_ios),
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/audio/trim');
+          //   },
+          // ),
         ],
       ),
       Center(
