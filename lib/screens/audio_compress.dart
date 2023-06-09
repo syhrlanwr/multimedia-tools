@@ -2,13 +2,14 @@ import 'dart:io';
 
 // import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 // import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 
 class AudioCompress extends StatefulWidget {
   const AudioCompress({Key? key, required this.title}) : super(key: key);
@@ -51,31 +52,36 @@ class _AudioCompressState extends State<AudioCompress> {
     });
   }
 
-  Future<void> compressAudio() async {
+  compressAudio() async {
     if (selectedAudio == null) return;
-    final audioPath = selectedAudio!.path;
-    final arguments = [
-      '-i',
-      audioPath,
-      '-b:a',
-      '64k',
-      'output.${path.extension(audioPath)}',
-    ];
-    final result = await Process.run('ffmpeg', arguments);
-    if (result.exitCode != 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to compress audio'),
-        ),
-      );
-      return;
-    } else {
-      final file = File('output.${path.extension(audioPath)}');
-      setState(() {
-        compressedAudio = file;
-        player.setFilePath(file.path);
-      });
-    }
+    final directory = await getTemporaryDirectory();
+    final output = path.join(directory.path, 'output.m4a');
+    final arguments =
+        '-i ${selectedAudio!.path} -map 0:a:0 -c:a aac $output -y';
+    FFmpegKit.execute(arguments).then((session) async {
+      final returnCode = await session.getReturnCode();
+      if (ReturnCode.isSuccess(returnCode)) {
+        setState(() {
+          compressedAudio = File(output);
+          player.setFilePath(output);
+        });
+      } else if (ReturnCode.isCancel(returnCode)) {
+        print('Compression cancelled');
+      } else {
+        print('Error during compression');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error during compression'),
+          ),
+        );
+        final logs = await session.getAllLogs();
+        print('FFmpeg process exited with rc $returnCode and the following '
+            'output logs:');
+        for (final log in logs) {
+          print(log.getMessage());
+        }
+      }
+    });
   }
 
   Future<void> playAudio() async {
@@ -130,27 +136,30 @@ class _AudioCompressState extends State<AudioCompress> {
                 ),
               // show audio progress bar
               if (selectedAudio != null)
-                StreamBuilder<Duration?>(
-                  stream: player.durationStream,
-                  builder: (context, snapshot) {
-                    final duration = snapshot.data ?? Duration.zero;
-                    return StreamBuilder<Duration>(
-                      stream: player.positionStream,
-                      builder: (context, snapshot) {
-                        var position = snapshot.data ?? Duration.zero;
-                        if (position > duration) {
-                          position = duration;
-                        }
-                        return ProgressBar(
-                          progress: position,
-                          total: duration,
-                          onSeek: (duration) {
-                            player.seek(duration);
-                          },
-                        );
-                      },
-                    );
-                  },
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: StreamBuilder<Duration?>(
+                    stream: player.durationStream,
+                    builder: (context, snapshot) {
+                      final duration = snapshot.data ?? Duration.zero;
+                      return StreamBuilder<Duration>(
+                        stream: player.positionStream,
+                        builder: (context, snapshot) {
+                          var position = snapshot.data ?? Duration.zero;
+                          if (position > duration) {
+                            position = duration;
+                          }
+                          return ProgressBar(
+                            progress: position,
+                            total: duration,
+                            onSeek: (duration) {
+                              player.seek(duration);
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
 
               if (selectedAudio == null)
