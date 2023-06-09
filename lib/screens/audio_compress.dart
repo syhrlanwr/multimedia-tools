@@ -24,6 +24,7 @@ class _AudioCompressState extends State<AudioCompress> {
   AudioPlayer player = AudioPlayer();
   File? compressedAudio;
   File? selectedAudio;
+  bool isCompressing = false;
 
   saveAudio() async {
     if (compressedAudio == null) return;
@@ -54,6 +55,9 @@ class _AudioCompressState extends State<AudioCompress> {
 
   compressAudio() async {
     if (selectedAudio == null) return;
+    setState(() {
+      isCompressing = true;
+    });
     final directory = await getTemporaryDirectory();
     final output = path.join(directory.path, 'output.m4a');
     final arguments =
@@ -64,7 +68,14 @@ class _AudioCompressState extends State<AudioCompress> {
         setState(() {
           compressedAudio = File(output);
           player.setFilePath(output);
+          isCompressing = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Compression complete'),
+          ),
+        );
+        Navigator.pop(context);
       } else if (ReturnCode.isCancel(returnCode)) {
         print('Compression cancelled');
       } else {
@@ -191,9 +202,25 @@ class _AudioCompressState extends State<AudioCompress> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
-                        child: Text('Compress audio'),
-                        onPressed: () => compressAudio(),
-                      ),
+                          child: Text('Compress audio'),
+                          onPressed: () {
+                            compressAudio();
+                            if (isCompressing) {
+                              // show loading dialog when isCompressing is true and hide it when it's false
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  content: Row(
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(width: 16),
+                                      Text('Compressing audio...'),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                          }),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
